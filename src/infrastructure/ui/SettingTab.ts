@@ -101,7 +101,7 @@ export class TemplateManagerSettingTab extends PluginSettingTab {
             .setDesc('Change the icon used for the ribbon menu. Select from common icons below or search all.');
         
         const iconPreview = iconSetting.controlEl.createDiv({
-            cls: 'tm-icon-preview',
+            cls: 'th-icon-preview',
             attr: { style: 'margin-right: 10px;'}
         });
         setIcon(iconPreview, this.plugin.settings.ribbonIcon);
@@ -118,32 +118,13 @@ export class TemplateManagerSettingTab extends PluginSettingTab {
             }));
         
         // --- Icon Mosaic ---
-        const mosaicContainer = containerEl.createDiv();
-        // Apply styles directly to ensure grid layout
-        mosaicContainer.style.display = 'grid';
-        mosaicContainer.style.gridTemplateColumns = 'repeat(17, 1fr)';
-        mosaicContainer.style.gap = '8px';
-        mosaicContainer.style.paddingLeft = '48px'; // Align with setting controls
-        mosaicContainer.style.marginBottom = '20px';
-
+        const mosaicContainer = containerEl.createDiv({ cls: 'th-icon-mosaic' });
         COMMON_ICONS.forEach(iconId => {
-            const iconEl = mosaicContainer.createDiv();
-            // Style the mosaic item
-            iconEl.style.cursor = 'pointer';
-            iconEl.style.padding = '6px';
-            iconEl.style.borderRadius = '5px';
-            iconEl.style.border = '1px solid var(--background-modifier-border)';
-            iconEl.style.textAlign = 'center';
-
-            iconEl.setAttribute('aria-label', iconId);
+            const iconEl = mosaicContainer.createDiv({
+                cls: 'th-icon-mosaic-item',
+                attr: { 'aria-label': iconId }
+            });
             setIcon(iconEl, iconId);
-
-            iconEl.addEventListener('mouseenter', () => {
-                iconEl.style.backgroundColor = 'var(--background-modifier-hover)';
-            });
-            iconEl.addEventListener('mouseleave', () => {
-                iconEl.style.backgroundColor = 'transparent';
-            });
             
             iconEl.onClickEvent(async () => {
                 this.plugin.settings.ribbonIcon = iconId;
