@@ -1,8 +1,21 @@
-/*
+/* TemplateHub Plugin Styles */
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.th-icon-mosaic {
+    display: grid;
+    grid-template-columns: repeat(17, 1fr);
+    gap: 8px;
+    padding-left: 48px; /* Aligns with setting-item-control */
+    margin-bottom: 20px;
+}
 
-If your plugin does not need CSS, delete this file.
+.th-icon-mosaic-item {
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 5px;
+    border: 1px solid var(--background-modifier-border);
+    text-align: center;
+}
 
-*/
+.th-icon-mosaic-item:hover {
+    background-color: var(--background-modifier-hover);
+}
