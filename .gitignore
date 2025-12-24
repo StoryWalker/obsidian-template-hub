@@ -3,3 +3,6 @@ node_modules/
 main.js
 *.map
 .DS_Store
+
+# Project-specific tracking files (local only)
+0[0-9]_*.md
