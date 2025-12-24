@@ -3,9 +3,3 @@ node_modules/
 main.js
 *.map
 .DS_Store
-
-# Project-specific tracking files
-src/00_PRD.md
-src/bitacora.md
-src/log.md
-src/tasks.md
