@@ -1,0 +1,19 @@
+
+.tm-icon-mosaic {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-left: 48px; /* Aligns with setting-item-control */
+    margin-bottom: 20px;
+}
+
+.tm-icon-mosaic-item {
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 5px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.tm-icon-mosaic-item:hover {
+    background-color: var(--background-modifier-hover);
+}
