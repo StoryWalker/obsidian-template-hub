@@ -178,5 +178,22 @@ export class TemplateManagerSettingTab extends PluginSettingTab {
         
         const evalExample = evalDesc.createEl('li', { cls: 'th-code-example'});
         evalExample.innerHTML = 'Example: `{{eval: return file.stat.size; }}` returns the size of the current file in bytes.';
+
+        // --- Shared State & Code Blocks ---
+        const sharedLi = evalList.createEl('li');
+        sharedLi.innerHTML = '<strong>Advanced Logic Blocks</strong>: Create complex logic with persistent variables.';
+        
+        const sharedDesc = sharedLi.createEl('ul');
+        sharedDesc.createEl('li').innerHTML = '<strong>&lt;&lt; código &gt;&gt;</strong>: Executes logic and defines variables (produces no output).';
+        sharedDesc.createEl('li').innerHTML = '<strong>&lt;&lt;: expresión &gt;&gt;</strong>: Evaluates a variable or expression and prints the result.';
+        
+        const sharedExample = sharedDesc.createEl('li', { cls: 'th-code-example'});
+        sharedExample.innerHTML = '<strong>Example:</strong><br>' +
+            '&lt;&lt;<br>' + 
+            '  user = "StoryWalker";<br>' +
+            '  limit = 1000;<br>' +
+            '  status = file.stat.size > limit ? "Big" : "Small";<br>' +
+            '&gt;&gt;<br>' +
+            'The file is &lt;&lt;: status &gt;&gt; and owned by &lt;&lt;: user &gt;&gt;.';
 	}
 }
