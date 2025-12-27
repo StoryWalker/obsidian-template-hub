@@ -2,13 +2,23 @@ import { Plugin, Notice, Editor, TFile, MarkdownView } from 'obsidian';
 import { TemplateManagerSettingTab } from './infrastructure/ui/SettingTab';
 import { TemplateManagerSettings, DEFAULT_SETTINGS } from './infrastructure/settings/settings';
 import { TemplateSuggestModal } from './infrastructure/ui/TemplateSuggestModal';
+import { RegexTemplateProcessor } from './infrastructure/services/RegexTemplateProcessor';
+import { InsertTemplateUseCase } from './application/use-cases/InsertTemplateUseCase';
 
 export default class TemplateManagerPlugin extends Plugin {
     settings: TemplateManagerSettings;
     ribbonIconEl: HTMLElement | null = null;
+    
+    // Services and Use Cases
+    private templateProcessor: RegexTemplateProcessor;
+    private insertTemplateUseCase: InsertTemplateUseCase;
 
     async onload() {
         console.log('Loading Template Manager plugin...');
+
+        // Initialize services and use cases
+        this.templateProcessor = new RegexTemplateProcessor();
+        this.insertTemplateUseCase = new InsertTemplateUseCase(this.templateProcessor);
 
         await this.loadSettings();
         this.updateRibbonIcon();
@@ -56,7 +66,9 @@ export default class TemplateManagerPlugin extends Plugin {
 
         new TemplateSuggestModal(this.app, templates, async (selectedTemplate) => {
             const content = await this.app.vault.read(selectedTemplate);
-            editor.replaceSelection(content);
+            const activeFile = this.app.workspace.getActiveFile();
+            const processedContent = this.insertTemplateUseCase.execute(content, activeFile, this.app);
+            editor.replaceSelection(processedContent);
         }).open();
     }
 

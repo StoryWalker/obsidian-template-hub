@@ -134,5 +134,49 @@ export class TemplateManagerSettingTab extends PluginSettingTab {
                 new Notice(`Icon set to '${iconId}'`);
             });
         });
+        
+        // --- Dynamic Variables Documentation ---
+        containerEl.createEl('h3', { text: 'Dynamic Template Variables' });
+        const docEl = containerEl.createDiv({ cls: 'setting-item-description' });
+        docEl.createEl('p', { text: 'You can use the following variables in your templates. They will be replaced with their dynamic values when you insert a template:' });
+
+        const varList = docEl.createEl('ul');
+        varList.createEl('li').innerHTML = '<strong>{{title}}</strong>: The title of the current note (the file name without the extension).';
+        varList.createEl('li').innerHTML = '<strong>{{date}}</strong>: The current date in YYYY-MM-DD format.';
+        varList.createEl('li').innerHTML = '<strong>{{time}}</strong>: The current time in HH:mm format.';
+        varList.createEl('li').innerHTML = '<strong>{{folder}}</strong>: The path of the folder containing the current note.';
+        
+        const customDateLi = varList.createEl('li');
+        customDateLi.innerHTML = '<strong>{{date:FORMAT}}</strong>: The current date and time with a custom format.';
+        const customDateDesc = customDateLi.createEl('ul');
+        const customDateDescLi = customDateDesc.createEl('li');
+        customDateDescLi.innerHTML = 'Example: `{{date:dddd, MMMM Do YYYY}}` becomes `Wednesday, December 24th 2025`.';
+        const customDateDescLi2 = customDateDesc.createEl('li');
+        customDateDescLi2.innerHTML = 'The formatting is based on <a href="https://momentjs.com/docs/#/displaying/format/">Moment.js</a>.';
+
+        // --- Advanced Scripting Documentation ---
+        containerEl.createEl('h3', { text: 'Advanced Scripting' });
+        const advancedDocEl = containerEl.createDiv({ cls: 'setting-item-description' });
+        const warningEl = advancedDocEl.createEl('p');
+        warningEl.innerHTML = '<strong>Warning:</strong> Advanced scripting provides powerful access to the Obsidian API. Use scripts from trusted sources only, as malicious code could lead to data loss.';
+
+        const evalList = advancedDocEl.createEl('ul');
+        const evalLi = evalList.createEl('li');
+        evalLi.innerHTML = '<strong>{{eval:CODE}}</strong>: Executes JavaScript code.';
+        
+        const evalDesc = evalLi.createEl('ul');
+        evalDesc.createEl('li').innerHTML = 'The code has access to the Obsidian `app` object, the `moment` library, and the current `file` object.';
+        
+        const apiLinks = evalDesc.createEl('li');
+        apiLinks.innerHTML = 'Explore the possibilities in the <a href="https://docs.obsidian.md/Home">Official Obsidian Developer Docs</a> or the <a href="https://github.com/obsidianmd/obsidian-api/blob/master/obsidian.d.ts">API Reference</a>.';
+        
+        const detailsList = apiLinks.createEl('ul');
+        detailsList.createEl('li').innerHTML = '<strong>app</strong>: The entry point to the entire Obsidian application (vault, workspace, metadata, etc.).';
+        detailsList.createEl('li').innerHTML = '<strong>file</strong>: A `TFile` object representing the active note (name, path, stats).';
+
+        evalDesc.createEl('li').innerHTML = 'The code must return a string or a value that can be converted to a string.';
+        
+        const evalExample = evalDesc.createEl('li', { cls: 'th-code-example'});
+        evalExample.innerHTML = 'Example: `{{eval: return file.stat.size; }}` returns the size of the current file in bytes.';
 	}
 }

@@ -19,3 +19,11 @@
 .th-icon-mosaic-item:hover {
     background-color: var(--background-modifier-hover);
 }
+
+.th-code-example {
+    background-color: var(--background-secondary);
+    padding: 5px;
+    border-radius: 4px;
+    font-family: var(--font-monospace);
+    margin-top: 5px;
+}
