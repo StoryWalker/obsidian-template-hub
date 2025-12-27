@@ -195,5 +195,25 @@ export class TemplateManagerSettingTab extends PluginSettingTab {
             '  status = file.stat.size > limit ? "Big" : "Small";<br>' +
             '&gt;&gt;<br>' +
             'The file is &lt;&lt;: status &gt;&gt; and owned by &lt;&lt;: user &gt;&gt;.';
+
+        // --- System Functions ---
+        const systemLi = evalList.createEl('li');
+        systemLi.innerHTML = '<strong>System Functions</strong>: Special functions to interact with Obsidian.';
+        
+        const systemDesc = systemLi.createEl('ul');
+        const renameLi = systemDesc.createEl('li');
+        renameLi.innerHTML = '<strong>renameFile(newName)</strong>: Renames the current file to `newName`.';
+        const renameDetails = renameLi.createEl('ul');
+        renameDetails.createEl('li').innerHTML = 'Internal links to this file will be automatically updated by Obsidian.';
+        renameDetails.createEl('li').innerHTML = 'Do not include the `.md` extension in the name.';
+        
+        const renameExample = renameDetails.createEl('li', { cls: 'th-code-example'});
+        renameExample.innerHTML = '<strong>Example:</strong> `&lt;&lt; renameFile("Note - " + moment().format("YYYY-MM-DD")); &gt;&gt;`';
+
+        const moveLi = systemDesc.createEl('li');
+        moveLi.innerHTML = '<strong>moveFile(folderPath)</strong>: Moves the current file to `folderPath`.';
+        const moveDetails = moveLi.createEl('ul');
+        moveDetails.createEl('li').innerHTML = 'If the folder does not exist, it will be created automatically.';
+        moveDetails.createEl('li').innerHTML = 'Example: `&lt;&lt; moveFile("Projects/Archive"); &gt;&gt;`';
 	}
 }

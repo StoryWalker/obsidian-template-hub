@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { ITemplateProcessor } from '../../domain/services/ITemplateProcessor';
+import { ITemplateProcessor, ProcessedTemplate } from '../../domain/services/ITemplateProcessor';
 import { Template } from '../../domain/entities/Template';
 import { TemplateContext } from '../../domain/entities/TemplateContext';
 
@@ -7,13 +7,23 @@ import { TemplateContext } from '../../domain/entities/TemplateContext';
 declare const moment: any;
 
 export class RegexTemplateProcessor implements ITemplateProcessor {
-    process(template: Template, context: TemplateContext, app: App, file: TFile | null): Template {
+    process(template: Template, context: TemplateContext, app: App, file: TFile | null): ProcessedTemplate {
         let processedTemplate = template;
         
-        // Context for variables shared across blocks
-        const sharedScope: Record<string, any> = {};
+        // Instructions for post-processing actions
+        const sideEffects: { renameTo?: string, moveToFolder?: string } = {};
 
-        // 1. Basic variables (Pre-processing)
+        // Shared scope with system functions
+        const sharedScope: Record<string, any> = {
+            renameFile: (newName: string) => {
+                sideEffects.renameTo = newName;
+            },
+            moveFile: (folderPath: string) => {
+                sideEffects.moveToFolder = folderPath;
+            }
+        };
+
+        // 1. Basic variables
         if (context.title !== undefined) {
             processedTemplate = processedTemplate.replace(/\{\{title\}\}/g, context.title);
         }
@@ -28,12 +38,10 @@ export class RegexTemplateProcessor implements ITemplateProcessor {
             return moment().format(format);
         });
 
-        // 3. Process Logic Blocks: << code >> (Produces NO output)
-        // We escape the angle brackets just in case
+        // 3. Process Logic Blocks: << code >>
         const logicBlockRegex = /<<(?!:)([\s\S]*?)>>/g;
         processedTemplate = processedTemplate.replace(logicBlockRegex, (_, code) => {
             try {
-                // Using a normal string instead of a template literal for the function body to avoid interpolation issues
                 const executor = new Function('app', 'moment', 'file', 'scope', 'with(scope) { ' + code + ' }');
                 executor(app, moment, file, sharedScope);
                 return ''; 
@@ -43,11 +51,18 @@ export class RegexTemplateProcessor implements ITemplateProcessor {
             }
         });
 
-        // 4. Process Output Blocks: <<: expression >> (Produces output)
+        // 4. Process Output Blocks: <<: expression >>
         const outputBlockRegex = /<<:([\s\S]*?)>>/g;
         processedTemplate = processedTemplate.replace(outputBlockRegex, (_, expression) => {
             try {
-                const evaluator = new Function('app', 'moment', 'file', 'scope', 'with(scope) { return (' + expression + '); }');
+                // Sanitize: remove leading/trailing whitespace and trailing semicolon
+                let cleanExpr = expression.trim();
+                if (cleanExpr.endsWith(';')) {
+                    cleanExpr = cleanExpr.slice(0, -1);
+                }
+                
+                // We use return directly without parentheses to avoid the "Unexpected token ')'" error
+                const evaluator = new Function('app', 'moment', 'file', 'scope', 'with(scope) { return ' + cleanExpr + '; }');
                 const result = evaluator(app, moment, file, sharedScope);
                 return result !== null && result !== undefined ? String(result) : '';
             } catch (e) {
@@ -56,7 +71,7 @@ export class RegexTemplateProcessor implements ITemplateProcessor {
             }
         });
 
-        // 5. Compatibility with legacy {{eval:...}}
+        // 5. Legacy {{eval}} compatibility
         processedTemplate = processedTemplate.replace(/\{\{eval:([\s\S]*?)\}\}/g, (_, code) => {
             try {
                 const sandboxedFn = new Function('app', 'moment', 'file', 'scope', 'with(scope) { ' + code + ' }');
@@ -68,6 +83,10 @@ export class RegexTemplateProcessor implements ITemplateProcessor {
             }
         });
         
-        return processedTemplate;
+        return {
+            content: processedTemplate,
+            renameTo: sideEffects.renameTo,
+            moveToFolder: sideEffects.moveToFolder
+        };
     }
 }
