@@ -54,38 +54,48 @@ export default class TemplateManagerPlugin extends Plugin {
             return;
         }
 
-        const allFiles = this.app.vault.getFiles();
-        const templates = allFiles.filter(file =>
-            file.path.startsWith(templateFolderPath + '/') && file.extension === 'md'
-        );
-
-        if (templates.length === 0) {
-            new Notice(`No templates found in the folder: ${templateFolderPath}`);
+        const rootFolder = this.app.vault.getAbstractFileByPath(templateFolderPath);
+        if (!rootFolder || !(rootFolder instanceof TFolder)) {
+            new Notice(`Templates folder not found: ${templateFolderPath}`);
             return;
         }
 
-        new TemplateSuggestModal(this.app, templates, async (selectedTemplate) => {
-            const content = await this.app.vault.read(selectedTemplate);
+        // Get immediate children (Projects and root templates)
+        const initialItems = rootFolder.children.filter(f => 
+            (f instanceof TFile && f.extension === 'md') || f instanceof TFolder
+        );
+
+        if (initialItems.length === 0) {
+            new Notice(`No templates or projects found in: ${templateFolderPath}`);
+            return;
+        }
+
+        // Open the hierarchical modal
+        new TemplateSuggestModal(this.app, templateFolderPath, initialItems, async (selection) => {
+            const content = await this.app.vault.read(selection.file);
             const activeFile = this.app.workspace.getActiveFile();
             
-            // Execute template processing
-            const result = this.insertTemplateUseCase.execute(content, activeFile, this.app);
+            // Execute template processing with Project and Type info
+            const result = this.insertTemplateUseCase.execute(
+                content, 
+                activeFile, 
+                this.app, 
+                selection.project, 
+                selection.type
+            );
             
             // 1. Insert processed content
             editor.replaceSelection(result.content);
 
-            // 2. Handle File Renaming & Movement (HU-015 & HU-016)
+            // 2. Handle File Renaming & Movement
             if ((result.renameTo || result.moveToFolder) && activeFile) {
                 try {
-                    // Determine new folder and name
                     const targetFolder = result.moveToFolder !== undefined ? result.moveToFolder : (activeFile.parent?.path === '/' ? '' : activeFile.parent?.path || '');
                     const targetName = result.renameTo || activeFile.basename;
                     
-                    // Normalize folder path (ensure it doesn't end with / unless it's root)
                     let cleanFolder = targetFolder.trim();
                     if (cleanFolder.endsWith('/')) cleanFolder = cleanFolder.slice(0, -1);
                     
-                    // Ensure target folder exists
                     if (cleanFolder !== '' && cleanFolder !== '/') {
                         await this.ensureFolderExists(cleanFolder);
                     }
@@ -106,9 +116,6 @@ export default class TemplateManagerPlugin extends Plugin {
         }).open();
     }
 
-    /**
-     * Recursively ensures that a folder path exists in the vault.
-     */
     private async ensureFolderExists(path: string) {
         const folders = path.split('/');
         let currentPath = '';

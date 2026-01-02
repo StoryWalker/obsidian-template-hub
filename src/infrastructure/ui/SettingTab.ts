@@ -145,6 +145,8 @@ export class TemplateManagerSettingTab extends PluginSettingTab {
         varList.createEl('li').innerHTML = '<strong>{{date}}</strong>: The current date in YYYY-MM-DD format.';
         varList.createEl('li').innerHTML = '<strong>{{time}}</strong>: The current time in HH:mm format.';
         varList.createEl('li').innerHTML = '<strong>{{folder}}</strong>: The path of the folder containing the current note.';
+        varList.createEl('li').innerHTML = '<strong>{{project}}</strong>: The name of the project folder selected in the modal (MVP5).';
+        varList.createEl('li').innerHTML = '<strong>{{type}}</strong>: The name of the template file selected in the modal (MVP5).';
         
         const customDateLi = varList.createEl('li');
         customDateLi.innerHTML = '<strong>{{date:FORMAT}}</strong>: The current date and time with a custom format.';

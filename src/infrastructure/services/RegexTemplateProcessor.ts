@@ -13,14 +13,17 @@ export class RegexTemplateProcessor implements ITemplateProcessor {
         // Instructions for post-processing actions
         const sideEffects: { renameTo?: string, moveToFolder?: string } = {};
 
-        // Shared scope with system functions
+        // Shared scope with system functions and NEW project context
         const sharedScope: Record<string, any> = {
             renameFile: (newName: string) => {
                 sideEffects.renameTo = newName;
             },
             moveFile: (folderPath: string) => {
                 sideEffects.moveToFolder = folderPath;
-            }
+            },
+            // Injected selection context
+            project: context.project || '',
+            type: context.type || ''
         };
 
         // 1. Basic variables
@@ -55,13 +58,9 @@ export class RegexTemplateProcessor implements ITemplateProcessor {
         const outputBlockRegex = /<<:([\s\S]*?)>>/g;
         processedTemplate = processedTemplate.replace(outputBlockRegex, (_, expression) => {
             try {
-                // Sanitize: remove leading/trailing whitespace and trailing semicolon
                 let cleanExpr = expression.trim();
-                if (cleanExpr.endsWith(';')) {
-                    cleanExpr = cleanExpr.slice(0, -1);
-                }
+                if (cleanExpr.endsWith(';')) cleanExpr = cleanExpr.slice(0, -1);
                 
-                // We use return directly without parentheses to avoid the "Unexpected token ')'" error
                 const evaluator = new Function('app', 'moment', 'file', 'scope', 'with(scope) { return ' + cleanExpr + '; }');
                 const result = evaluator(app, moment, file, sharedScope);
                 return result !== null && result !== undefined ? String(result) : '';

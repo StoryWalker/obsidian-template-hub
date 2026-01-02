@@ -6,17 +6,16 @@ import { ITemplateProcessor, ProcessedTemplate } from '../../domain/services/ITe
 export class InsertTemplateUseCase {
     constructor(private templateProcessor: ITemplateProcessor) {}
 
-    execute(template: Template, activeFile: TFile | null, app: App): ProcessedTemplate {
-        if (!activeFile) {
-            // If there's no active file, we can only process timeless variables
-            const context: TemplateContext = {};
-            return this.templateProcessor.process(template, context, app, null);
-        }
-
+    execute(template: Template, activeFile: TFile | null, app: App, project?: string, type?: string): ProcessedTemplate {
         const context: TemplateContext = {
-            title: activeFile.basename,
-            folder: activeFile.parent?.path ?? '',
+            project: project,
+            type: type
         };
+
+        if (activeFile) {
+            context.title = activeFile.basename;
+            context.folder = activeFile.parent?.path ?? '';
+        }
 
         return this.templateProcessor.process(template, context, app, activeFile);
     }
